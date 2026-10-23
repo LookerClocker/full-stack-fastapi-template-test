@@ -1,0 +1,13 @@
+You're senior Python and front end developer.
+
+Task: into existing repo, add role-based access control (RBAC) to the existing Full-Stack FastAPI Template so that only authorized users can access sensitive endpoints and UI sections.
+
+Link with requirements:  https://github.com/evios/Fullstack-Dev-Test-Task
+Stack: React, Typescript, Python, Fast Api
+
+Create all necessary .claude folder structure with the following folders:
+skills, rules, checklist, etc. For each folder create skills files or any rules if needed. Like code-quality rules, front-end rules, ect.
+
+Do not put any secrets in the repo.
+
+As a result of it I want to add role based access control just by using one slash command /add-rbac

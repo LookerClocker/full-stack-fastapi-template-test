@@ -1,8 +1,11 @@
 import uuid
 from datetime import UTC, datetime
 
-from pydantic import EmailStr
+from pydantic import EmailStr, computed_field
+from sqlalchemy import String
 from sqlmodel import Field, Relationship, SQLModel
+
+from app.core.rbac import Permission, Role, permissions_for
 
 
 def get_datetime_utc() -> datetime:
@@ -13,7 +16,7 @@ def get_datetime_utc() -> datetime:
 class UserBase(SQLModel):
     email: EmailStr = Field(unique=True, index=True, max_length=255)
     is_active: bool = True
-    is_superuser: bool = False
+    role: Role = Field(default=Role.MEMBER, sa_type=String(length=20))
     full_name: str | None = Field(default=None, max_length=255)
 
 
@@ -32,7 +35,7 @@ class UserRegister(SQLModel):
 class UserUpdate(SQLModel):
     email: EmailStr | None = Field(default=None, max_length=255)
     is_active: bool | None = None
-    is_superuser: bool | None = None
+    role: Role | None = None
     full_name: str | None = Field(default=None, max_length=255)
     password: str | None = Field(default=None, min_length=8, max_length=128)
 
@@ -58,7 +61,13 @@ class User(UserBase, table=True):
 # Properties to return via API, id is always required
 class UserPublic(UserBase):
     id: uuid.UUID
+    role: Role
     created_at: datetime | None = None
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def permissions(self) -> list[Permission]:
+        return sorted(permissions_for(self.role))
 
 
 class UsersPublic(SQLModel):
@@ -103,6 +112,13 @@ class ItemPublic(ItemBase):
 class ItemsPublic(SQLModel):
     data: list[ItemPublic]
     count: int
+
+
+class MetricsPublic(SQLModel):
+    total_users: int
+    active_users: int
+    total_items: int
+    users_by_role: dict[Role, int]
 
 
 # Generic message

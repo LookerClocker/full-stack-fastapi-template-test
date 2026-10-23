@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(.claude/scripts/dev.sh:*)",
+      "Bash(bash .claude/scripts/dev.sh:*)",
+      "Bash(.claude/skills/add-rbac/scripts/smoke_test.sh:*)",
+      "Bash(bash .claude/skills/add-rbac/scripts/smoke_test.sh:*)",
+      "Bash(docker compose ps:*)",
+      "Bash(docker compose logs:*)",
+      "Bash(docker logs:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git branch:*)",
+      "Bash(git switch -c:*)",
+      "Bash(curl -s:*)"
+    ],
+    "deny": [
+      "Bash(docker compose down -v:*)",
+      "Bash(git push:*)",
+      "Bash(git reset --hard:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/protect_files.py"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/follow_up_reminders.py"
+          }
+        ]
+      }
+    ]
+  }
+}

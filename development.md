@@ -101,6 +101,8 @@ docker compose watch
 
 The tracked `.env` file contains local development defaults, passwords, and other configuration. Its hostnames use `localhost` for processes running on your machine. Docker Compose overrides hostnames such as the database and SMTP server with their Compose service names.
 
+The demo accounts `manager@example.com` and `member@example.com` are seeded only in development. Their password comes from `DEMO_USER_PASSWORD`, which is set in `compose.override.yml` (default `changethis`) and intentionally kept out of `.env`. When running the backend with `uv`, pass it explicitly: `DEMO_USER_PASSWORD=changethis uv run bash scripts/prestart.sh`.
+
 Do not store deployment secrets in `.env`. Configure them as described in the [FastAPI Cloud deployment guide](./deployment.md) or the [Docker Compose deployment guide](./deployment-docker-compose.md).
 
 ## Pre-commit Hooks and Code Linting

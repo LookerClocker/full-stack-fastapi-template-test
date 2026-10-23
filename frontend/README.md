@@ -5,6 +5,7 @@ The frontend is built with [Vite](https://vitejs.dev/), [React](https://react.de
 ## Requirements
 
 - [Bun](https://bun.sh/)
+- [Node.js](https://nodejs.org/) `^20.19` or `>=22.12` (required by Vite 8). The repository's `.nvmrc` pins 22: run `nvm install && nvm use`.
 
 ## Quick Start
 

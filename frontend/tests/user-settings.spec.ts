@@ -4,7 +4,7 @@ import { createUser } from "./utils/privateApi.ts"
 import { randomEmail, randomPassword } from "./utils/random"
 import { logInUser, logOutUser } from "./utils/user"
 
-const tabs = ["My profile", "Password", "Danger zone"]
+const adminTabs = ["My profile", "Password"]
 
 test("My profile tab is active by default", async ({ page }) => {
   await page.goto("/settings")
@@ -14,11 +14,12 @@ test("My profile tab is active by default", async ({ page }) => {
   )
 })
 
-test("All tabs are visible", async ({ page }) => {
+test("Admin sees profile tabs but no danger zone", async ({ page }) => {
   await page.goto("/settings")
-  for (const tab of tabs) {
+  for (const tab of adminTabs) {
     await expect(page.getByRole("tab", { name: tab })).toBeVisible()
   }
+  await expect(page.getByRole("tab", { name: "Danger zone" })).not.toBeVisible()
 })
 
 test.describe("Edit user profile", () => {

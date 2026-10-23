@@ -1,4 +1,5 @@
-from collections.abc import Generator
+import logging
+from collections.abc import Callable, Generator
 from typing import Annotated
 
 import jwt
@@ -11,7 +12,10 @@ from sqlmodel import Session
 from app.core import security
 from app.core.config import settings
 from app.core.db import engine
+from app.core.rbac import Permission, has_permission
 from app.models import TokenPayload, User
+
+logger = logging.getLogger(__name__)
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/login/access-token"
@@ -35,8 +39,9 @@ def get_current_user(session: SessionDep, token: TokenDep) -> User:
         token_data = TokenPayload(**payload)
     except InvalidTokenError, ValidationError:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
         )
     user = session.get(User, token_data.sub)
     if not user:
@@ -49,9 +54,26 @@ def get_current_user(session: SessionDep, token: TokenDep) -> User:
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
-def get_current_active_superuser(current_user: CurrentUser) -> User:
-    if not current_user.is_superuser:
-        raise HTTPException(
-            status_code=403, detail="The user doesn't have enough privileges"
-        )
-    return current_user
+def ensure_permission(user: User, permission: Permission) -> None:
+    if has_permission(user.role, permission):
+        return
+    logger.warning(
+        "Permission denied: user_id=%s role=%s permission=%s",
+        user.id,
+        user.role,
+        permission,
+    )
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="You don't have permission to perform this action",
+    )
+
+
+def require_permission(permission: Permission) -> Callable[[User], User]:
+    """Route dependency: `dependencies=[Depends(require_permission(Permission.X))]`."""
+
+    def check_permission(current_user: CurrentUser) -> User:
+        ensure_permission(current_user, permission)
+        return current_user
+
+    return check_permission

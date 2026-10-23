@@ -64,6 +64,8 @@ services:
       - ./backend/htmlcov:/app/backend/htmlcov
     environment:
       FASTAPI_ENV: "development"
+      # Local-only demo accounts (manager@example.com, member@example.com)
+      DEMO_USER_PASSWORD: ${DEMO_USER_PASSWORD:-changethis}
       SMTP_HOST: "mailpit"
       SMTP_PORT: "1025"
       SMTP_TLS: "false"
